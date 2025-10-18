@@ -48,8 +48,8 @@ def girar_izquierda():
     motor_der.stop()
 
 def girar_derecha():
-    """Gira el robot hacia la izquierda."""
-    print("Girando a la izquierda...")
+    """Gira el robot hacia la derecha."""
+    print("Girando a la derecha...")
     # 1. Reiniciar el ángulo del giroscopio a 0
     giroscopio.reset()
     motor_izq.run_forever(speed_sp=VEL_REVERSA)
@@ -61,7 +61,7 @@ def girar_derecha():
 
 def avanza(): #funcion principal de avance 
     """Avanza hasta encontrar un obstáculo o la zona de recolección."""
-    while ojo_ultra.distance_centimeters > 15 or ojo_frente.value() > 30:
+    while ojo_ultra.distance_centimeters > 15 and ojo_frente.value() > 30:
     # Avanzar mientras no haya obstáculos cercanos o llegues a la línea de recoleccion
         motor_izq.run_forever(speed_sp=VEL_ALTA)
         motor_der.run_forever(speed_sp=VEL_ALTA)
@@ -75,7 +75,8 @@ def avanza(): #funcion principal de avance
         print("Zona de recolección alcanzada.")
         motor_izq.stop()
         motor_der.stop()
-        #posiciona_en_arbol1()
+        sleep(0.5)
+        #posiciona_en_recoleccion()
 
 def avanza_dist(distancia_cm):
     """Avanza una distancia específica en centímetros."""
@@ -93,6 +94,7 @@ def avanza_dist(distancia_cm):
     # Esperar a que ambos motores terminen
     motor_izq.wait_while('running')
     motor_der.wait_while('running')
+    sleep(0.5)
 
 def evadir_obstaculo():  
     """
@@ -132,6 +134,32 @@ def evadir_obstaculo():
             girar_izquierda()
             sleep(0.5)
             avanza() #avanza sin importar que haya, ya que es la ultima opcion
+
+def posiciona_en_recoleccion():
+    """Posiciona el robot en la zona de recolección.
+        nos colocamos en la esquina izquierda de la zona de recolección"""
+    print("Posicionando en la zona de recolección...")
+    # Aquí se pueden agregar las maniobras necesarias para posicionar el robot
+    # en la zona de recolección, si es necesario.
+    girar_izquierda()
+    while ojo_frente.value() > 30:
+    # Avanzar mientras no se llegue a la linea de limite
+        motor_izq.run_forever(speed_sp=VEL_ALTA)
+        motor_der.run_forever(speed_sp=VEL_ALTA)
+    #llegue, procedo a detenerme
+    motor_izq.stop()   
+    motor_der.stop()
+    #ahora giramos 180 y nos colocamon enfrente del primer arbol
+    girar_derecha()
+    girar_derecha()
+    avanza_dist(49) #asume que el robot esta a un margen de 10cm del limite izq
+    girar_izquierda()
+    #estamos colocados enfrente del arbol, ajustamos posibles desviaciones
+    #asumo margen de 10cm desde la linea al robot mas 10 de la linea al arbol
+    if ojo_ultra.distance_centimeters > 18 and ojo_ultra.distance_centimeters < 22:
+        print("OK")
+    else:
+        calibra_angulo()
 
 def run():
     avanza_dist(30) #avanza un poco para saltar la primer linea negra
