@@ -293,11 +293,29 @@ def ejecutar_estado_navegando_a_cultivo():
         
         # Una pequeña pausa para no saturar el procesador
         time.sleep(0.01)
+    
+def ejecutar_estado_evadiendo():
+    """
+    Esta función contiene la lógica que se ejecuta
+    cuando el robot está en el estado EVADIENDO_OBSTACULO.
+    """
+    print("Acción: Evadiendo obstáculo...")
+    # Lógica para evadir el obstáculo 
+    motor_1.stop()
+    motor_2.stop()
+    """
+    Primero todo a la izq , luego derecha hasta 2 veces
+    """
+    #estamos aqui porque detectamos un obstaculo
+    
+    
+    print("¡EVENTO! Obstáculo evadido.")
+    RobotRecolector.procesar_evento("obstaculo_superado")
 
 # --- En en main ---
 while True:
     if RobotRecolector.estado_actual == "NAVEGANDO_A_CULTIVO":
         ejecutar_estado_navegando_a_cultivo()
-    #elif RobotRecolector.estado_actual == "EVADIENDO_OBSTACULO":
-        #ejecutar_estado_evadiendo()
+    elif RobotRecolector.estado_actual == "EVADIENDO_OBSTACULO":
+        ejecutar_estado_evadiendo()
 # ... etc para todos los demás estados
