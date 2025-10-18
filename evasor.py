@@ -169,9 +169,23 @@ def posiciona_en_recoleccion():
     motor_izq.stop()   
     motor_der.stop()
     girar_derecha() #queda el robot mirando enfrente
-    pos_arbol() #nos vamos al primer arbol
+    pos_arbol() #nos vamos al arbol que toque recoger
 
-def pos_arbol():
+"""requiero brazo final para las llamadas"""
+def recoger_alto():
+    print("recoge")
+def recoger_medio():
+    print("recoge")
+def recoger_bajo():
+    print("recoge")
+
+def pos_recoger(): #se coloca enfrente de la primer pelota
+    girar_izquierda()
+    avanza_dist(26)
+    girar_derecha()
+
+
+def pos_arbol(): #nos deja el robot ajustado en medio de cada arbol
     if arbol_a_recoger == 0:
         #ahora giramos 90 y nos colocamon enfrente del primer arbol
         girar_derecha()
@@ -205,6 +219,8 @@ def pos_arbol():
             print("OK")
         else:
             calibra_angulo()
+    #ya estamos enfrente de algun arbol, pasamos a colocarnos en la semilla 1
+    pos_recoger()
 
 def run():
     avanza_dist(30) #avanza un poco para saltar la primer linea negra
