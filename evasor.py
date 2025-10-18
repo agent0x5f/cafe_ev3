@@ -30,8 +30,11 @@ giroscopio = GyroSensor('in4')
 giroscopio.mode = 'GYRO-ANG'
 giroscopio.calibrate()
 time.sleep(1)
+arbol_a_recoger = 0 # 0,1,2
 
 VEL_ALTA = 80
+VEL_MEDIA = 30
+VEL_REVERSA_MEDIA = 30
 VEL_NEUTRA = 0
 VEL_REVERSA = -80
 
@@ -135,6 +138,22 @@ def evadir_obstaculo():
             sleep(0.5)
             avanza() #avanza sin importar que haya, ya que es la ultima opcion
 
+def calibra_angulo():
+        """ajusta el angulo del robot
+            asume que esta enfrente del arbol a 20cm"""
+        #no sabemos si estamos muy a la izq o a la der
+        #revisamos desde 45g la izq
+        giroscopio.reset()
+        motor_izq.run_forever(speed_sp=VEL_REVERSA)
+        motor_der.run_forever(speed_sp=VEL_ALTA)
+        giroscopio.wait_until_angle_changed_by(45)
+        #escaneamos hacia la derecha hasta encontrar la dist correcta
+        while ojo_ultra.distance_centimeters < 19 or ojo_ultra.distance_centimeters >21:
+            motor_izq.run_forever(speed_sp=VEL_MEDIA)
+            motor_der.run_forever(speed_sp=VEL_REVERSA_MEDIA)
+        motor_izq.stop()
+        motor_der.stop()
+
 def posiciona_en_recoleccion():
     """Posiciona el robot en la zona de recolección.
         nos colocamos en la esquina izquierda de la zona de recolección"""
@@ -149,17 +168,43 @@ def posiciona_en_recoleccion():
     #llegue, procedo a detenerme
     motor_izq.stop()   
     motor_der.stop()
-    #ahora giramos 180 y nos colocamon enfrente del primer arbol
-    girar_derecha()
-    girar_derecha()
-    avanza_dist(49) #asume que el robot esta a un margen de 10cm del limite izq
-    girar_izquierda()
-    #estamos colocados enfrente del arbol, ajustamos posibles desviaciones
-    #asumo margen de 10cm desde la linea al robot mas 10 de la linea al arbol
-    if ojo_ultra.distance_centimeters > 18 and ojo_ultra.distance_centimeters < 22:
-        print("OK")
-    else:
-        calibra_angulo()
+    girar_derecha() #queda el robot mirando enfrente
+    pos_arbol() #nos vamos al primer arbol
+
+def pos_arbol():
+    if arbol_a_recoger == 0:
+        #ahora giramos 90 y nos colocamon enfrente del primer arbol
+        girar_derecha()
+        avanza_dist(49) #asume que el robot esta a un margen de 10cm del limite izq
+        girar_izquierda()
+        #estamos colocados enfrente del arbol, ajustamos posibles desviaciones
+        #asumo margen de 10cm desde la linea al robot mas 10 de la linea al arbol
+        if ojo_ultra.distance_centimeters > 18.5 and ojo_ultra.distance_centimeters < 21.5:
+            print("OK")
+        else:
+            calibra_angulo()
+    elif arbol_a_recoger == 1:
+        #ahora giramos 90 y nos colocamon enfrente del segundo arbol
+        girar_derecha()
+        avanza_dist(166.4) #asume que el robot esta a un margen de 10cm del limite izq
+        girar_izquierda()
+        #estamos colocados enfrente del arbol, ajustamos posibles desviaciones
+        #asumo margen de 10cm desde la linea al robot mas 10 de la linea al arbol
+        if ojo_ultra.distance_centimeters > 18.5 and ojo_ultra.distance_centimeters < 21.5:
+            print("OK")
+        else:
+            calibra_angulo()
+    elif arbol_a_recoger == 2:
+        #ahora giramos 90 y nos colocamon enfrente del tercer arbol
+        girar_derecha()
+        avanza_dist(283.8) #asume que el robot esta a un margen de 10cm del limite izq
+        girar_izquierda()
+        #estamos colocados enfrente del arbol, ajustamos posibles desviaciones
+        #asumo margen de 10cm desde la linea al robot mas 10 de la linea al arbol
+        if ojo_ultra.distance_centimeters > 18.5 and ojo_ultra.distance_centimeters < 21.5:
+            print("OK")
+        else:
+            calibra_angulo()
 
 def run():
     avanza_dist(30) #avanza un poco para saltar la primer linea negra
