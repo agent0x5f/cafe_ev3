@@ -60,6 +60,7 @@ def girar_derecha():
     motor_der.stop()
 
 def avanza(): #funcion principal de avance 
+    """Avanza hasta encontrar un obstáculo o la zona de recolección."""
     while ojo_ultra.distance_centimeters > 15 or ojo_frente.value() > 30:
     # Avanzar mientras no haya obstáculos cercanos o llegues a la línea de recoleccion
         motor_izq.run_forever(speed_sp=VEL_ALTA)
