@@ -6,9 +6,11 @@ Sistema de navegación basado en conocimiento previo del terreno y uso de sensor
 from ev3dev2.auto import *
 from time import perf_counter, sleep
 import math
-
-motor_1 = LargeMotor(OUTPUT_A)
-motor_2 = LargeMotor(OUTPUT_D)
+"""
+Inicialización de motores y sensores
+"""
+motor_izq = LargeMotor(OUTPUT_A)
+motor_der = LargeMotor(OUTPUT_D)
 #motores del brazo y garra (no usados en este módulo)
 #motor_3 = LargeMotor(OUTPUT_C)
 #motor_4 = LargeMotor(OUTPUT_D)
@@ -23,3 +25,114 @@ ojo_ultra.mode = 'US-DIST-CM'
 ojo_color = ColorSensor('in3')
 #configuramos el sensor de color para que use el modo de color
 ojo_color.mode = 'COL-COLOR'
+#giroscopio
+giroscopio = GyroSensor('in4')
+giroscopio.mode = 'GYRO-ANG'
+giroscopio.calibrate()
+time.sleep(1)
+
+VEL_ALTA = 80
+VEL_NEUTRA = 0
+VEL_REVERSA = -80
+
+def girar_izquierda():
+    """Gira el robot hacia la izquierda."""
+    print("Girando a la izquierda...")
+    # 1. Reiniciar el ángulo del giroscopio a 0
+    giroscopio.reset()
+    motor_izq.run_forever(speed_sp=VEL_ALTA)
+    motor_der.run_forever(speed_sp=VEL_REVERSA)
+    giroscopio.wait_until_angle_changed_by(90)
+    sleep(0.1)
+    motor_izq.stop()
+    motor_der.stop()
+
+def girar_derecha():
+    """Gira el robot hacia la izquierda."""
+    print("Girando a la izquierda...")
+    # 1. Reiniciar el ángulo del giroscopio a 0
+    giroscopio.reset()
+    motor_izq.run_forever(speed_sp=VEL_REVERSA)
+    motor_der.run_forever(speed_sp=VEL_ALTA)
+    giroscopio.wait_until_angle_changed_by(90)
+    sleep(0.1)
+    motor_izq.stop()
+    motor_der.stop()
+
+def avanza(): #funcion principal de avance 
+    while ojo_ultra.distance_centimeters > 15 or ojo_frente.value() > 30:
+    # Avanzar mientras no haya obstáculos cercanos o llegues a la línea de recoleccion
+        motor_izq.run_forever(speed_sp=VEL_ALTA)
+        motor_der.run_forever(speed_sp=VEL_ALTA)
+    #algo se detecto, procedo a detenerme
+    motor_izq.stop()   
+    motor_der.stop()
+    #evadir obstaculo o llegamos a la zona de recoleccion
+    if ojo_ultra.distance_centimeters <= 15:#obstaculo
+        evadir_obstaculo()
+    else: #llegue a la zona de recoleccion
+        print("Zona de recolección alcanzada.")
+        motor_izq.stop()
+        motor_der.stop()
+        #posiciona_en_arbol1()
+
+def avanza_dist(distancia_cm):
+    """Avanza una distancia específica en centímetros."""
+    # Calcular el número de grados que deben girar los motores
+    # Circunferencia de la rueda = 2 * pi * radio
+    radio_rueda_cm = 2.8  # Radio de la rueda en cm (ajustar según el robot)
+    circunferencia_cm = 2 * math.pi * radio_rueda_cm
+    grados_a_girar = (distancia_cm / circunferencia_cm) * 360
+    # Reiniciar los contadores de tacho
+    motor_izq.reset()
+    motor_der.reset()
+    # Configurar los motores para avanzar la distancia deseada
+    motor_izq.run_to_rel_pos(position_sp=grados_a_girar, speed_sp=VEL_ALTA, stop_action="brake")
+    motor_der.run_to_rel_pos(position_sp=grados_a_girar, speed_sp=VEL_ALTA, stop_action="brake")
+    # Esperar a que ambos motores terminen
+    motor_izq.wait_while('running')
+    motor_der.wait_while('running')
+
+def evadir_obstaculo():  
+    """
+    Función para evadir obstáculos detectados por el sensor ultrasónico.
+    El robot se detiene, evalúa la situación y realiza maniobras para evitar el obstáculo.
+    """
+    print("Iniciando maniobra de evasión de obstáculo...")
+    
+    sleep(0.5)  # Pequeña pausa para estabilizar
+    # Girar a la izquierda para evadir el obstáculo
+    girar_izquierda()
+    sleep(0.5)
+    #Avanzar todo a la izquierda
+    while ojo_frente.value() > 30:  #mientras no detecte la linea
+        motor_izq.run_forever(speed_sp=VEL_ALTA)
+        motor_der.run_forever(speed_sp=VEL_ALTA)
+    #avanzo hasta detectar la linea
+    motor_izq.stop()
+    motor_der.stop()
+    #ahora giro a la derecha y reviso
+    girar_derecha()
+    sleep(0.5)
+    if ojo_ultra.distance_centimeters > 15: #si esta libre
+        avanza()
+    else: #2 - si no esta libre, giro a la derecha y avanzo 1 slot
+        girar_derecha()
+        sleep(0.5)
+        avanza_dist(72)#avanza un slot de 72 cm
+        girar_izquierda()
+        sleep(0.5)
+        if ojo_ultra.distance_centimeters > 15: #si esta libre
+            avanza()
+        else: #3 - si no esta libre, giro a la derecha y avanzo 1 slot
+            girar_derecha()
+            sleep(0.5)
+            avanza_dist(72)#avanza un slot de 72 cm
+            girar_izquierda()
+            sleep(0.5)
+            avanza() #avanza sin importar que haya, ya que es la ultima opcion
+
+def run():
+    avanza_dist(30) #avanza un poco para saltar la primer linea negra
+    avanza() #comienza el avance normal
+        
