@@ -175,6 +175,25 @@ def posiciona_en_recoleccion():
     girar_derecha() #queda el robot mirando enfrente
     pos_arbol() #nos vamos al arbol que toque recoger
 
+def deposita():
+    print("deposita")
+
+def sig_zona_depo(): #Reposiciona zona de deposito
+    girar_izquierda()
+    avanza_dist(70)
+    girar_derecha()
+    pos_zona_maduros()
+
+def pos_zona_maduros():
+    #buscamos la zona de deposito
+    if ojo_ultra.distance_centimeters <= 15 and ojo_color.color == 5: #si es la caja para maduros(roja)
+        deposita()  #deja todos los maduros
+        girar_derecha() #date la vuelta
+        girar_derecha()
+        avanza() #otra tanda de recoleccion
+    else: #no hay nada o es la caja incorrecta ve a la siguiente pos.
+        sig_zona_depo()
+
 def posiciona_en_deposito():
     """Posiciona el robot en la zona de deposito.
         nos colocamos en la esquina izquierda de la zona de deposito"""
