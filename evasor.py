@@ -156,6 +156,7 @@ def calibra_angulo():
         giroscopio.wait_until_angle_changed_by(45)
         #escaneamos hacia la derecha hasta encontrar la dist correcta
         while ojo_ultra.distance_centimeters < 19 or ojo_ultra.distance_centimeters >21:
+            print("distancia al arbol"+ojo_ultra.distance_centimeters)
             motor_izq.run_forever(speed_sp=VEL_MEDIA)
             motor_der.run_forever(speed_sp=VEL_REVERSA_MEDIA)
         motor_izq.stop()
