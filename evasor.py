@@ -37,6 +37,7 @@ VEL_MEDIA = 30
 VEL_REVERSA_MEDIA = -30
 VEL_NEUTRA = 0
 VEL_REVERSA = -80
+PELOTAS = 0
 
 def girar_izquierda():
     """Gira el robot hacia la izquierda."""
@@ -63,7 +64,7 @@ def girar_derecha():
     motor_der.stop()
 
 def avanza(): #funcion principal de avance 
-    """Avanza hasta encontrar un obstáculo o la zona de recolección."""
+    """Avanza hasta encontrar un obstáculo o la zona de recolección/deposito."""
     while ojo_ultra.distance_centimeters > 15 and ojo_frente.value() > 30:
     # Avanzar mientras no haya obstáculos cercanos o llegues a la línea de recoleccion
         motor_izq.run_forever(speed_sp=VEL_ALTA)
@@ -75,11 +76,14 @@ def avanza(): #funcion principal de avance
     if ojo_ultra.distance_centimeters <= 15:#obstaculo
         evadir_obstaculo()
     else: #llegue a la zona de recoleccion
-        print("Zona de recolección alcanzada.")
+        print("Zona alcanzada.")
         motor_izq.stop()
         motor_der.stop()
         sleep(0.5)
-        #posiciona_en_recoleccion()
+    if PELOTAS == 0: #Si no tengo pelotas es que voy a recoger
+        posiciona_en_recoleccion() #Procede a recolectar
+    else:
+        posiciona_en_deposito() #EOC deposita las pelotas
 
 def avanza_dist(distancia_cm):
     """Avanza una distancia específica en centímetros."""
@@ -170,6 +174,22 @@ def posiciona_en_recoleccion():
     motor_der.stop()
     girar_derecha() #queda el robot mirando enfrente
     pos_arbol() #nos vamos al arbol que toque recoger
+
+def posiciona_en_deposito():
+    """Posiciona el robot en la zona de deposito.
+        nos colocamos en la esquina izquierda de la zona de deposito"""
+    print("Posicionando en la zona de deposito...") 
+    girar_derecha()
+    while ojo_frente.value() > 30:
+    # Avanzar mientras no se llegue a la linea de limite
+        motor_izq.run_forever(speed_sp=VEL_ALTA)
+        motor_der.run_forever(speed_sp=VEL_ALTA)
+    #llegue, procedo a detenerme
+    motor_izq.stop()   
+    motor_der.stop()
+    girar_izquierda() #queda el robot mirando enfrente
+    pos_zona_maduros() #nos vamos a buscar la zona de maduros
+
 
 """requiero brazo final para las llamadas"""
 def recoger_alto():
