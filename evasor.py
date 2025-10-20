@@ -9,16 +9,16 @@ import math
 """
 Inicialización de motores y sensores
 """
-motor_izq = LargeMotor(OUTPUT_A)
-motor_der = LargeMotor(OUTPUT_D)
+motor_izq = LargeMotor(OUTPUT_C)
+motor_der = LargeMotor(OUTPUT_B)
 #motores del brazo y garra (no usados en este módulo)
 #motor_3 = LargeMotor(OUTPUT_C)
 #motor_4 = LargeMotor(OUTPUT_D)
 #sensor de color frontal para detectar la línea
-ojo_frente = ColorSensor('in1')
+ojo_frente = ColorSensor('in2')
 ojo_frente.mode = 'COL-REFLECT'
 #sensor ultrasónico para detectar obstáculos delante del robot
-ojo_ultra = UltrasonicSensor('in2')
+ojo_ultra = UltrasonicSensor('in4')
 #configuramos el sensor ultrasónico para que use el modo de distancia en cm
 ojo_ultra.mode = 'US-DIST-CM'
 #sensor de color para detectar el color del café, montado en la garra
@@ -26,7 +26,7 @@ ojo_color = ColorSensor('in3')
 #configuramos el sensor de color para que use el modo de color
 ojo_color.mode = 'COL-COLOR'
 #giroscopio
-giroscopio = GyroSensor('in4')
+giroscopio = GyroSensor('in1')
 giroscopio.mode = 'GYRO-ANG'
 giroscopio.calibrate()
 time.sleep(1)
@@ -64,6 +64,7 @@ def girar_derecha():
     motor_der.stop()
 
 def avanza(): #funcion principal de avance 
+    print("avanzando")
     """Avanza hasta encontrar un obstáculo o la zona de recolección/deposito."""
     while ojo_ultra.distance_centimeters > 15 and ojo_frente.value() > 30:
     # Avanzar mientras no haya obstáculos cercanos o llegues a la línea de recoleccion
@@ -87,6 +88,7 @@ def avanza(): #funcion principal de avance
 
 def avanza_dist(distancia_cm):
     """Avanza una distancia específica en centímetros."""
+    print("avanzando dist")
     # Calcular el número de grados que deben girar los motores
     # Circunferencia de la rueda = 2 * pi * radio
     radio_rueda_cm = 2.8  # Radio de la rueda en cm (ajustar según el robot)
@@ -145,6 +147,7 @@ def evadir_obstaculo():
 def calibra_angulo():
         """ajusta el angulo del robot
             asume que esta enfrente del arbol a 20cm"""
+        print("ajustando angulo al arbol")
         #no sabemos si estamos muy a la izq o a la der
         #revisamos desde 45g la izq
         giroscopio.reset()
@@ -160,8 +163,8 @@ def calibra_angulo():
 
 def posiciona_en_recoleccion():
     """Posiciona el robot en la zona de recolección.
-        nos colocamos en la esquina izquierda de la zona de recolección"""
-    print("Posicionando en la zona de recolección...")
+        nos colocamos en la esquina izquierda de la zona de recoleccion"""
+    print("Posicionando en la zona de recoleccion...")
     # Aquí se pueden agregar las maniobras necesarias para posicionar el robot
     # en la zona de recolección, si es necesario.
     girar_izquierda()
@@ -179,12 +182,14 @@ def deposita():
     print("deposita")
 
 def sig_zona_depo(): #Reposiciona zona de deposito
+    print("siguiente zona de deposito")
     girar_izquierda()
     avanza_dist(70)
     girar_derecha()
     pos_zona_maduros()
 
 def pos_zona_maduros():
+    print("buscando zona de deposito de maduros")
     #buscamos la zona de deposito
     if ojo_ultra.distance_centimeters <= 15 and ojo_color.color == 5: #si es la caja para maduros(roja)
         deposita()  #deja todos los maduros
@@ -225,6 +230,7 @@ def pos_recoger(): #se coloca enfrente de la primer pelota
 
 
 def pos_arbol(): #nos deja el robot ajustado en medio de cada arbol
+    print("poscisionando en arbol")
     if arbol_a_recoger == 0:
         #ahora giramos 90 y nos colocamon enfrente del primer arbol
         girar_derecha()
@@ -262,6 +268,8 @@ def pos_arbol(): #nos deja el robot ajustado en medio de cada arbol
     pos_recoger()
 
 def run():
+    print("iniciando")
     avanza_dist(30) #avanza un poco para saltar la primer linea negra
     avanza() #comienza el avance normal
-        
+
+run()
